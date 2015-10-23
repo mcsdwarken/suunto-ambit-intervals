@@ -200,14 +200,19 @@ angular.module('ambitIntervalsApp')
         validateTargetVariables(step, 'Target heart rate');
         output += createStepBodyVariables(step, 'SUUNTO_LAP_AVG_HR', 'bpm', 0);
       }
-      
+
       if (step.target.type === 'HR Zone') {
         validateTargetVariables(step, 'Target heart rate zone');
-        step.target.from = '(SUUNTO_USER_MAX_HR - SUUNTO_USER_REST_HR) * 0.'+(4+step.target.equals)+' + SUUNTO_USER_REST_HR - 1';
-        step.target.to = '(SUUNTO_USER_MAX_HR - SUUNTO_USER_REST_HR) * 0.'+(5+step.target.equals)+' + SUUNTO_USER_REST_HR + 1';
+        if (interval.karvonen) {
+          step.target.from = '(SUUNTO_USER_MAX_HR - SUUNTO_USER_REST_HR) * 0.' + (4 + step.target.equals) + ' + SUUNTO_USER_REST_HR - 1';
+          step.target.to = '(SUUNTO_USER_MAX_HR - SUUNTO_USER_REST_HR) * 0.' + (5 + step.target.equals) + ' + SUUNTO_USER_REST_HR + 1';
+        }
+        else {
+          step.target.from = 'SUUNTO_USER_MAX_HR * 0.' + (4 + step.target.equals) + ' - 1';
+          step.target.to = 'SUUNTO_USER_MAX_HR 0.' + (5 + step.target.equals) + ' + 1';
+        }
         output += createStepBodyVariables(step, 'SUUNTO_HR', 'HR zone', 0);
       }
-
 
       if (step.target.type === 'Power') {
         validateTargetVariables(step, 'Target power');

@@ -22,6 +22,7 @@ angular.module('ambitIntervalsApp')
         targetAlarm: false,
         lightAlarm: false,
         imperial: false,
+        karvonen: true,
         steps: []
       };
     }
