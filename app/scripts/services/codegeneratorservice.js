@@ -203,15 +203,20 @@ angular.module('ambitIntervalsApp')
 
       if (step.target.type === 'HR Zone') {
         validateTargetVariables(step, 'Target heart rate zone');
-        if (interval.karvonen) {
-          step.target.from = '(SUUNTO_USER_MAX_HR - SUUNTO_USER_REST_HR) * 0.' + (4 + step.target.equals) + ' + SUUNTO_USER_REST_HR - 1';
-          step.target.to = '(SUUNTO_USER_MAX_HR - SUUNTO_USER_REST_HR) * 0.' + (5 + step.target.equals) + ' + SUUNTO_USER_REST_HR + 1';
-        }
-        else {
-          step.target.from = 'SUUNTO_USER_MAX_HR * 0.' + (4 + step.target.equals) + ' - 1';
-          step.target.to = 'SUUNTO_USER_MAX_HR 0.' + (5 + step.target.equals) + ' + 1';
-        }
-        output += createStepBodyVariables(step, 'SUUNTO_HR', 'HR zone', 0);
+        // if (interval.karvonen) {
+        //   step.target.from = '(SUUNTO_USER_MAX_HR - SUUNTO_USER_REST_HR) * 0.' + (4 + step.target.equals) + ' + SUUNTO_USER_REST_HR - 1';
+        //   step.target.to = '(SUUNTO_USER_MAX_HR - SUUNTO_USER_REST_HR) * 0.' + (5 + step.target.equals) + ' + SUUNTO_USER_REST_HR + 1';
+        // }
+        // else {
+        //   step.target.from = 'SUUNTO_USER_MAX_HR * 0.' + (4 + step.target.equals) + ' - 1';
+        //   step.target.to = 'SUUNTO_USER_MAX_HR 0.' + (5 + step.target.equals) + ' + 1';
+        // }
+        var actual = interval.karvonen 
+          ? '10*(SUUNTO_HR - SUUNTO_USER_REST_HR)/(SUUNTO_USER_MAX_HR  - SUUNTO_USER_REST_HR) - 4'
+          : '10*SUUNTO_HR/SUUNTO_USER_MAX_HR+4';
+        step.target.from = step.target.equals;
+        step.target.to = step.target.equals+1;
+        output += createStepBodyVariables(step, actual, '', 0);
       }
 
       if (step.target.type === 'Power') {
@@ -365,20 +370,20 @@ angular.module('ambitIntervalsApp')
       output += '  TARGET = ACTUAL;\r\n';
       output += '}\r\n\r\n';
 
-      output += '/* Check if result should be formatted as pace and lables reversed */\r\n';
+      output += '/* Check if result should be formatted as pace and labels reversed */\r\n';
       output += 'if (FORMATPACE == 1) {\r\n';
       output += '  if (ACTUAL > TO) {\r\n';
-      output += '    prefix ="up";\r\n';
+      output += '    prefix ="^";\r\n';
       if (input.targetAlarm) {
         output += createTargetAlarm(1, 2, true);
       }
       output += '  } else if (ACTUAL < FROM) {\r\n';
-      output += '    prefix = "dwn";\r\n';
+      output += '    prefix = "v";\r\n';
       if (input.targetAlarm) {
         output += createTargetAlarm(-1, 3, true);
       }
       output += '  } else {\r\n';
-      output += '    prefix = "ok";\r\n';
+      output += '    prefix = ">";\r\n';
       if (input.targetAlarm) {
         output += createTargetAlarm(0, 0, false);
       }
@@ -388,22 +393,26 @@ angular.module('ambitIntervalsApp')
       output += '  RESULT = TARGETMIN + TARGETSEC/100;\r\n';
       output += '} else {\r\n';
       output += '  if (ACTUAL > TO) {\r\n';
-      output += '    prefix ="dwn";\r\n';
+      output += '    prefix ="v";\r\n';
       if (input.targetAlarm) {
         output += createTargetAlarm(-1, 3, true);
       }
       output += '  } else if (ACTUAL < FROM) {\r\n';
-      output += '    prefix = "up";\r\n';
+      output += '    prefix = "^";\r\n';
       if (input.targetAlarm) {
         output += createTargetAlarm(1, 2, true);
       }
       output += '  } else {\r\n';
-      output += '    prefix = "ok";\r\n';
+      output += '    prefix = ">";\r\n';
       if (input.targetAlarm) {
         output += createTargetAlarm(0, 0, false);
       }
       output += '  }\r\n\r\n';
-      output += '  RESULT = TARGET;\r\n';
+      if(interval.useTargetWhenOutOfTarget){
+        output += '  RESULT = TARGET;\r\n';
+      } else {
+        output += '  RESULT = ACTUAL;\r\n';
+      }
       output += '}\r\n';
 
       if (input.targetAlarm) {
